@@ -53,12 +53,12 @@
 
 <!-- Open Graph -->
 <meta property="og:type" content="website">
-<meta property="og:title" content="Qavona — Launch Your Multi-Vendor Empire">
+<meta property="og:title" content="Qavona — Launch Your E-Commerce Vendor">
 <meta property="og:description" content="The complete multi-vendor marketplace platform for physical & digital products. Join the waitlist for early access.">
 <meta property="og:image" content="https://qavona.com/og-image.jpg">
 <meta property="og:url" content="https://qavona.com">
 <meta name="twitter:card" content="summary_large_image">
-<meta name="twitter:title" content="Qavona — Launch Your Multi-Vendor Empire">
+<meta name="twitter:title" content="Qavona — Launch Your E-Commerce Vendor">
 <meta name="twitter:description" content="Sell physical and digital products from one beautiful, powerful marketplace. Join the waitlist.">
 
 <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -309,7 +309,7 @@
       </div>
 
       <h1 id="hero-headline" class="font-display font-bold text-white text-[2.6rem] leading-[1.08] sm:text-5xl lg:text-6xl tracking-tight">
-        Launch Your <span class="gold-text-gradient">Multi-Vendor Empire</span>
+        Launch Your <br><span class="gold-text-gradient">E-Commerce Vendor</span>
       </h1>
       <svg viewBox="0 0 460 24" class="w-[260px] sm:w-[340px] -mt-1 mb-2" aria-hidden="true">
         <path d="M4 14 C 90 4, 180 20, 270 8 S 420 4, 456 12" fill="none" stroke="url(#underlineGold)" stroke-width="5" stroke-linecap="round" opacity="0.85"/>
@@ -554,7 +554,7 @@
      ========================================================= -->
 <section class="bg-ink-2 border-y border-line py-16 lg:py-20">
   <div class="max-w-5xl mx-auto px-6 text-center">
-    <p class="text-gold text-xs font-bold tracking-[0.2em] uppercase mb-3">Official Launch</p>
+    <p class="text-gold text-xs font-bold tracking-[0.2em] uppercase mb-3">Official Launch</p> <h4 class="font-display text-white text-2xl sm:text-3xl font-semibold mb-10">July 24th, 2026, at 6:00 PM GMT</h4>
     <h2 class="font-display text-white text-2xl sm:text-3xl font-semibold mb-10">The marketplace opens its doors in</h2>
 
     <div id="countdown" class="grid grid-cols-4 gap-3 sm:gap-6 max-w-2xl mx-auto">
@@ -1251,7 +1251,7 @@ gsap.registerPlugin(ScrollTrigger);
    LAUNCH_DATE — set the official launch date/time here.
    Format: new Date('YYYY-MM-DDTHH:MM:SS')
 --------------------------------------------------------- */
-const LAUNCH_DATE = new Date('2026-09-15T09:00:00');
+const launch_DATE = new Date('2026-09-15T09:00:00');
 
 document.getElementById('year').textContent = new Date().getFullYear();
 
@@ -1282,23 +1282,48 @@ document.querySelectorAll('.mobile-link').forEach(link => {
 });
 
 /* ---------- Live countdown ---------- */
-function updateCountdown(){
+ /* ---------- Launch Date Definition ---------- */
+// 'Z' ensures the time is read as UTC/GMT
+const LAUNCH_DATE = new Date('2026-07-24T18:00:00Z');
+
+/* ---------- Live countdown ---------- */
+function updateCountdown() {
   const now = new Date();
   let diff = LAUNCH_DATE - now;
+  
+  // Stop at zero when the launch time is reached
   if (diff < 0) diff = 0;
 
-  const days = Math.floor(diff / (1000*60*60*24));
-  const hours = Math.floor((diff / (1000*60*60)) % 24);
-  const mins = Math.floor((diff / (1000*60)) % 60);
+  const days = Math.floor(diff / (1000 * 60 * 60 * 24));
+  const hours = Math.floor((diff / (1000 * 60 * 60)) % 24);
+  const mins = Math.floor((diff / (1000 * 60)) % 60);
   const secs = Math.floor((diff / 1000) % 60);
 
-  document.getElementById('cd-days').textContent = String(days).padStart(2,'0');
-  document.getElementById('cd-hours').textContent = String(hours).padStart(2,'0');
-  document.getElementById('cd-mins').textContent = String(mins).padStart(2,'0');
-  document.getElementById('cd-secs').textContent = String(secs).padStart(2,'0');
+  // Safety checks (optional but recommended) to ensure elements exist before updating
+  const elDays = document.getElementById('cd-days');
+  const elHours = document.getElementById('cd-hours');
+  const elMins = document.getElementById('cd-mins');
+  const elSecs = document.getElementById('cd-secs');
+
+  if (elDays) elDays.textContent = String(days).padStart(2, '0');
+  if (elHours) elHours.textContent = String(hours).padStart(2, '0');
+  if (elMins) elMins.textContent = String(mins).padStart(2, '0');
+  if (elSecs) elSecs.textContent = String(secs).padStart(2, '0');
 }
+
+// Run once immediately, then every second
 updateCountdown();
 setInterval(updateCountdown, 1000);
+
+/* ---------- Waitlist counter (subtle live-feel increment) ---------- */
+(function() {
+  const el = document.getElementById('waitlist-count');
+  let base = 2148;
+  setInterval(() => {
+    base += Math.floor(Math.random() * 2);
+    if (el) el.textContent = base.toLocaleString();
+  }, 9000);
+})();
 
 /* ---------- Waitlist counter (subtle live-feel increment) ---------- */
 (function(){
