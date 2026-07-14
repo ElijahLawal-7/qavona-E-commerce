@@ -28,11 +28,14 @@
      data URI, or simply change each <img data-logo-mark src="..."> to
      point at your own hosted image file instead.
 
-  4. EMAIL DESTINATION — the waitlist form posts to Formspree-style
-     endpoint placeholder. Search "FORM_ACTION_ENDPOINT" and replace
-     with your real form handler. Until then it falls back to a
-     `mailto:Contacts@qavona.com` link plus an in-page success state,
-     so the page works with zero backend.
+  4. EMAIL DESTINATION — both the hero quick-signup and the main
+     waitlist form already post to your live Formspree endpoint
+     (https://formspree.io/f/mdaqolve). To change where submissions
+     go, update that URL in two places: the `action` attribute on
+     #waitlist-form, and the fetch() call inside #hero-mini-form's
+     submit handler near the bottom <script>. Direct contact details
+     (Contact@qavona.com / +234 811 359 4654) live in the footer and
+     the waitlist form's footnote.
 
   5. COPY — all headline/section copy lives directly in the HTML below,
      organized by numbered section comments (SECTION 01, 02, 03 ...).
@@ -45,7 +48,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Qavona — The Complete Multi-Vendor Marketplace for Physical & Digital Products</title>
-<meta name="description" content="Qavona is the next-generation multi-vendor marketplace platform. Sell physical products, digital products, or both — beautiful storefronts, built-in payments, ads, and analytics in one dashboard. Join the waitlist.">
+<meta name="description" content="Qavona is a multi-vendor marketplace with dedicated Physical and Digital stores, built-in payments, an ads engine, and instant payouts. Open one login, run both. Join the waitlist.">
 <meta name="keywords" content="Qavona, multi-vendor marketplace, ecommerce platform, sell digital products, sell physical products, SaaS marketplace, vendor dashboard">
 
 <!-- Open Graph -->
@@ -60,7 +63,7 @@
 
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&family=Space+Grotesk:wght@500;600;700&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&family=Space+Grotesk:wght@500;600;700&family=Caveat:wght@600;700&display=swap" rel="stylesheet">
 
 <script src="https://cdn.tailwindcss.com"></script>
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
@@ -90,6 +93,7 @@
   }
   .font-display{font-family:'Space Grotesk',sans-serif;}
   .font-mono-num{font-family:'Space Grotesk',sans-serif; font-variant-numeric:tabular-nums;}
+  .font-marker{font-family:'Caveat',cursive;}
 
   ::selection{background:var(--gold); color:white;}
 
@@ -213,6 +217,38 @@
 
   .scroll-hide::-webkit-scrollbar{ display:none; }
   .scroll-hide{ -ms-overflow-style:none; scrollbar-width:none; }
+
+  /* Product mood-board slider */
+  .product-track{ animation:productscroll 34s linear infinite; }
+  .product-track:hover{ animation-play-state:paused; }
+  @keyframes productscroll{ from{ transform:translateX(0);} to{ transform:translateX(-50%);} }
+  .product-tile{ transition:transform .35s cubic-bezier(.2,.9,.3,1.2); }
+  .product-tile:hover{ transform:translateY(-10px) rotate(0deg) scale(1.02) !important; z-index:5; }
+  .tilt-a{ transform:rotate(-2.2deg) translateY(4px); }
+  .tilt-b{ transform:rotate(1.6deg) translateY(-10px); }
+  .tilt-c{ transform:rotate(-1deg) translateY(-2px); }
+  .tilt-d{ transform:rotate(2.4deg) translateY(6px); }
+  .tilt-e{ transform:rotate(-1.8deg) translateY(-8px); }
+  .tilt-f{ transform:rotate(1deg) translateY(2px); }
+  .sticker-tag{
+    font-family:'Caveat',cursive; font-weight:700; transform:rotate(-9deg);
+    text-shadow:0 1px 0 rgba(0,0,0,0.08);
+  }
+  .pin-dot{
+    width:9px; height:9px; border-radius:50%;
+    background:radial-gradient(circle at 35% 30%, #fff, var(--gold) 60%);
+    box-shadow:0 2px 4px rgba(0,0,0,0.35);
+  }
+
+  .hex-avatar{ clip-path:polygon(25% 5%, 75% 5%, 100% 50%, 75% 95%, 25% 95%, 0% 50%); }
+
+  /* Ghost numeral list (replaces icon-in-box pattern) */
+  .ghost-num{
+    font-family:'Space Grotesk',sans-serif; font-weight:700;
+    -webkit-text-stroke:1.5px rgba(11,18,32,0.16); color:transparent;
+    font-size:2.75rem; line-height:1;
+  }
+  .ghost-num-dark{ -webkit-text-stroke:1.5px rgba(255,255,255,0.22); }
 </style>
 </head>
 <body class="antialiased overflow-x-hidden">
@@ -268,17 +304,20 @@
 
   <div class="relative max-w-7xl mx-auto px-6 lg:px-10 grid lg:grid-cols-2 gap-16 items-center">
     <div>
-      <div id="hero-eyebrow" class="inline-flex items-center gap-2 px-4 py-1.5 rounded-full glass-card text-xs font-semibold tracking-wide text-gold uppercase mb-7">
-        <span class="w-1.5 h-1.5 rounded-full bg-gold-2 animate-pulse" style="background:var(--gold-2)"></span>
-        Now accepting early access
+      <div id="hero-eyebrow" class="inline-flex items-center gap-2.5 border border-dashed border-gold/50 px-3.5 py-1 -rotate-1 text-[11px] font-bold tracking-[0.15em] text-gold uppercase mb-8">
+        <i class="fa-solid fa-stamp"></i> Not live yet — waitlist is open
       </div>
 
       <h1 id="hero-headline" class="font-display font-bold text-white text-[2.6rem] leading-[1.08] sm:text-5xl lg:text-6xl tracking-tight">
         Launch Your <span class="gold-text-gradient">Multi-Vendor Empire</span>
       </h1>
+      <svg viewBox="0 0 460 24" class="w-[260px] sm:w-[340px] -mt-1 mb-2" aria-hidden="true">
+        <path d="M4 14 C 90 4, 180 20, 270 8 S 420 4, 456 12" fill="none" stroke="url(#underlineGold)" stroke-width="5" stroke-linecap="round" opacity="0.85"/>
+        <defs><linearGradient id="underlineGold" x1="0" y1="0" x2="1" y2="0"><stop offset="0" stop-color="#F8710D"/><stop offset="1" stop-color="#FFB648"/></linearGradient></defs>
+      </svg>
 
       <p id="hero-sub" class="mt-6 text-slate-300 text-lg leading-relaxed max-w-xl">
-        The ultimate platform to sell physical and digital products. Beautiful stores for vendors, seamless shopping for customers — all in one powerful marketplace.
+        Run a Physical store, a Digital store, or both — under one login. Buyers get one marketplace to browse; you get real traffic, instant payouts, and zero platform-hopping.
       </p>
 
       <div id="hero-ctas" class="mt-9 flex flex-col sm:flex-row gap-3.5">
@@ -334,7 +373,9 @@
           <div class="flex-1 bg-white/10 rounded-t" style="height:90%"></div>
         </div>
         <div class="flex items-center justify-between text-xs text-slate-400 border-t border-white/10 pt-3">
-          <span>Physical: 62%</span><span>Digital: 38%</span>
+          <span><i class="fa-solid fa-shop text-gold mr-1"></i>Amaka's Skincare</span>
+          <span class="text-slate-500">⇄</span>
+          <span><i class="fa-solid fa-laptop-code text-gold mr-1"></i>Amaka Teaches</span>
         </div>
       </div>
 
@@ -342,8 +383,8 @@
         <div class="w-full h-16 rounded-lg gold-gradient mb-2 flex items-center justify-center">
           <i class="fa-solid fa-cube text-white text-xl"></i>
         </div>
-        <p class="text-white text-xs font-semibold">Skincare Bundle</p>
-        <p class="text-slate-400 text-[11px]">Physical + eBook</p>
+        <p class="text-white text-xs font-semibold">Rosewater Toner</p>
+        <p class="text-slate-400 text-[11px]">Physical store</p>
       </div>
 
       <div class="absolute -bottom-4 left-0 sm:-left-4 w-36 rounded-xl glass-card p-3.5 shadow-xl float-y">
@@ -352,6 +393,157 @@
         </div>
         <p class="text-white text-xs font-semibold">UI/UX Masterclass</p>
         <p class="text-slate-400 text-[11px]">Digital course</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- =========================================================
+     SECTION 01B — PRODUCT SHOWCASE SLIDER
+     A scattered, mood-board style strip (not a rigid carousel) —
+     swap the 6 tiles below for real product photography whenever
+     it's ready; each tile is a self-contained block, easy to find
+     and replace one at a time (search "PRODUCT TILE").
+     ========================================================= -->
+<section class="relative bg-ink pb-20 lg:pb-28 overflow-hidden">
+  <div class="max-w-7xl mx-auto px-6 lg:px-10 mb-10 flex items-end justify-between flex-wrap gap-3">
+    <p class="font-marker text-3xl text-gold inline-block -rotate-2">what's already selling on Qavona</p>
+    <p class="text-slate-500 text-xs uppercase tracking-[0.2em] hidden sm:block"><i class="fa-solid fa-hand mr-1"></i>hover to pause</p>
+  </div>
+
+  <div class="overflow-hidden">
+    <div class="product-track flex gap-7 w-max px-6 lg:px-10 pb-8" id="product-track">
+
+      <!-- PRODUCT TILE: repeated twice back-to-back for the seamless scroll loop -->
+      <div class="product-tile tilt-a shrink-0 w-56 rounded-2xl p-5 relative shadow-2xl" style="background:linear-gradient(150deg,#1B2A4A,#334467)">
+        <span class="pin-dot absolute -top-1 left-1/2 -translate-x-1/2"></span>
+        <span class="sticker-tag absolute -right-2 -top-3 text-2xl text-gold bg-ink px-2 rounded rotate-6">Bestseller</span>
+        <div class="h-28 flex items-center justify-center mb-4"><i class="fa-solid fa-headphones text-5xl text-white/90"></i></div>
+        <p class="text-white font-semibold text-sm">Aura Wireless Headphones</p>
+        <p class="text-slate-400 text-xs mt-0.5 mb-3">Physical store · Lagos</p>
+        <p class="font-display text-gold font-bold">₦45,000</p>
+      </div>
+
+      <div class="product-tile tilt-b shrink-0 w-56 rounded-2xl p-5 relative shadow-2xl" style="background:linear-gradient(150deg,#C2410C,#FDBA74)">
+        <span class="pin-dot absolute -top-1 left-1/2 -translate-x-1/2"></span>
+        <div class="h-28 flex items-center justify-center mb-4"><i class="fa-solid fa-spa text-5xl text-white/90"></i></div>
+        <p class="text-white font-semibold text-sm">Rosewater Ritual Set</p>
+        <p class="text-white/70 text-xs mt-0.5 mb-3">Physical store · Abuja</p>
+        <p class="font-display text-white font-bold">₦18,500</p>
+      </div>
+
+      <div class="product-tile tilt-c shrink-0 w-56 rounded-2xl p-5 relative shadow-2xl" style="background:linear-gradient(150deg,#4C1D95,#7C3AED)">
+        <span class="pin-dot absolute -top-1 left-1/2 -translate-x-1/2"></span>
+        <span class="sticker-tag absolute -right-3 -top-3 text-2xl text-gold bg-ink px-2 rounded -rotate-6">New</span>
+        <div class="h-28 flex items-center justify-center mb-4"><i class="fa-solid fa-laptop-code text-5xl text-white/90"></i></div>
+        <p class="text-white font-semibold text-sm">UI/UX Design Masterclass</p>
+        <p class="text-white/70 text-xs mt-0.5 mb-3">Digital store · Course</p>
+        <p class="font-display text-white font-bold">₦25,000</p>
+      </div>
+
+      <div class="product-tile tilt-d shrink-0 w-56 rounded-2xl p-5 relative shadow-2xl" style="background:linear-gradient(150deg,#3F2A1D,#7C5A3E)">
+        <span class="pin-dot absolute -top-1 left-1/2 -translate-x-1/2"></span>
+        <div class="h-28 flex items-center justify-center mb-4"><i class="fa-solid fa-bag-shopping text-5xl text-white/90"></i></div>
+        <p class="text-white font-semibold text-sm">Weekender Leather Bag</p>
+        <p class="text-white/70 text-xs mt-0.5 mb-3">Physical store · Lagos</p>
+        <p class="font-display text-white font-bold">₦62,000</p>
+      </div>
+
+      <div class="product-tile tilt-e shrink-0 w-56 rounded-2xl p-5 relative shadow-2xl" style="background:linear-gradient(150deg,#0F766E,#2DD4BF)">
+        <span class="pin-dot absolute -top-1 left-1/2 -translate-x-1/2"></span>
+        <div class="h-28 flex items-center justify-center mb-4"><i class="fa-solid fa-camera-retro text-5xl text-white/90"></i></div>
+        <p class="text-white font-semibold text-sm">Photography Field Guide</p>
+        <p class="text-white/70 text-xs mt-0.5 mb-3">Digital store · eBook</p>
+        <p class="font-display text-white font-bold">₦8,000</p>
+      </div>
+
+      <div class="product-tile tilt-f shrink-0 w-56 rounded-2xl p-5 relative shadow-2xl" style="background:linear-gradient(150deg,#9D174D,#F472B6)">
+        <span class="pin-dot absolute -top-1 left-1/2 -translate-x-1/2"></span>
+        <div class="h-28 flex items-center justify-center mb-4"><i class="fa-solid fa-video text-5xl text-white/90"></i></div>
+        <p class="text-white font-semibold text-sm">1:1 Brand Strategy Session</p>
+        <p class="text-white/70 text-xs mt-0.5 mb-3">Digital store · Booking</p>
+        <p class="font-display text-white font-bold">₦30,000/hr</p>
+      </div>
+
+      <!-- duplicate set — keeps the marquee looping seamlessly -->
+      <div class="product-tile tilt-a shrink-0 w-56 rounded-2xl p-5 relative shadow-2xl" style="background:linear-gradient(150deg,#1B2A4A,#334467)" aria-hidden="true">
+        <span class="pin-dot absolute -top-1 left-1/2 -translate-x-1/2"></span>
+        <span class="sticker-tag absolute -right-2 -top-3 text-2xl text-gold bg-ink px-2 rounded rotate-6">Bestseller</span>
+        <div class="h-28 flex items-center justify-center mb-4"><i class="fa-solid fa-headphones text-5xl text-white/90"></i></div>
+        <p class="text-white font-semibold text-sm">Aura Wireless Headphones</p>
+        <p class="text-slate-400 text-xs mt-0.5 mb-3">Physical store · Lagos</p>
+        <p class="font-display text-gold font-bold">₦45,000</p>
+      </div>
+      <div class="product-tile tilt-b shrink-0 w-56 rounded-2xl p-5 relative shadow-2xl" style="background:linear-gradient(150deg,#C2410C,#FDBA74)" aria-hidden="true">
+        <span class="pin-dot absolute -top-1 left-1/2 -translate-x-1/2"></span>
+        <div class="h-28 flex items-center justify-center mb-4"><i class="fa-solid fa-spa text-5xl text-white/90"></i></div>
+        <p class="text-white font-semibold text-sm">Rosewater Ritual Set</p>
+        <p class="text-white/70 text-xs mt-0.5 mb-3">Physical store · Abuja</p>
+        <p class="font-display text-white font-bold">₦18,500</p>
+      </div>
+      <div class="product-tile tilt-c shrink-0 w-56 rounded-2xl p-5 relative shadow-2xl" style="background:linear-gradient(150deg,#4C1D95,#7C3AED)" aria-hidden="true">
+        <span class="pin-dot absolute -top-1 left-1/2 -translate-x-1/2"></span>
+        <span class="sticker-tag absolute -right-3 -top-3 text-2xl text-gold bg-ink px-2 rounded -rotate-6">New</span>
+        <div class="h-28 flex items-center justify-center mb-4"><i class="fa-solid fa-laptop-code text-5xl text-white/90"></i></div>
+        <p class="text-white font-semibold text-sm">UI/UX Design Masterclass</p>
+        <p class="text-white/70 text-xs mt-0.5 mb-3">Digital store · Course</p>
+        <p class="font-display text-white font-bold">₦25,000</p>
+      </div>
+      <div class="product-tile tilt-d shrink-0 w-56 rounded-2xl p-5 relative shadow-2xl" style="background:linear-gradient(150deg,#3F2A1D,#7C5A3E)" aria-hidden="true">
+        <span class="pin-dot absolute -top-1 left-1/2 -translate-x-1/2"></span>
+        <div class="h-28 flex items-center justify-center mb-4"><i class="fa-solid fa-bag-shopping text-5xl text-white/90"></i></div>
+        <p class="text-white font-semibold text-sm">Weekender Leather Bag</p>
+        <p class="text-white/70 text-xs mt-0.5 mb-3">Physical store · Lagos</p>
+        <p class="font-display text-white font-bold">₦62,000</p>
+      </div>
+      <div class="product-tile tilt-e shrink-0 w-56 rounded-2xl p-5 relative shadow-2xl" style="background:linear-gradient(150deg,#0F766E,#2DD4BF)" aria-hidden="true">
+        <span class="pin-dot absolute -top-1 left-1/2 -translate-x-1/2"></span>
+        <div class="h-28 flex items-center justify-center mb-4"><i class="fa-solid fa-camera-retro text-5xl text-white/90"></i></div>
+        <p class="text-white font-semibold text-sm">Photography Field Guide</p>
+        <p class="text-white/70 text-xs mt-0.5 mb-3">Digital store · eBook</p>
+        <p class="font-display text-white font-bold">₦8,000</p>
+      </div>
+      <div class="product-tile tilt-f shrink-0 w-56 rounded-2xl p-5 relative shadow-2xl" style="background:linear-gradient(150deg,#9D174D,#F472B6)" aria-hidden="true">
+        <span class="pin-dot absolute -top-1 left-1/2 -translate-x-1/2"></span>
+        <div class="h-28 flex items-center justify-center mb-4"><i class="fa-solid fa-video text-5xl text-white/90"></i></div>
+        <p class="text-white font-semibold text-sm">1:1 Brand Strategy Session</p>
+        <p class="text-white/70 text-xs mt-0.5 mb-3">Digital store · Booking</p>
+        <p class="font-display text-white font-bold">₦30,000/hr</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- =========================================================
+     SECTION 01C — WHAT IS QAVONA (concise definition)
+     ========================================================= -->
+<section class="py-20 lg:py-28 bg-paper border-y border-line-dark">
+  <div class="max-w-7xl mx-auto px-6 lg:px-10 grid lg:grid-cols-12 gap-10 lg:gap-16 items-start">
+    <div class="lg:col-span-7 reveal-section">
+      <p class="text-gold text-xs font-bold tracking-[0.2em] uppercase mb-4">What Qavona Actually Is</p>
+      <h2 class="font-display text-3xl sm:text-4xl font-bold tracking-tight leading-snug mb-6">
+        A marketplace where a Physical store and a Digital store live under the <span class="gold-text-gradient">same login</span> — without pretending they're the same business.
+      </h2>
+      <p class="text-slate-600 text-lg leading-relaxed max-w-xl">Most tools force a choice: sell things you ship, or sell things you deliver instantly — rarely both, without duct-taping two platforms together. Qavona gives you a dedicated store for each, built around how that kind of selling actually works, plus the marketplace traffic, payments, and payout speed to make either one worth running.</p>
+    </div>
+    <div class="lg:col-span-5 lg:pt-1 reveal-section">
+      <div class="space-y-5">
+        <div class="flex gap-4 items-baseline">
+          <span class="ghost-num">01</span>
+          <p class="text-[15px] text-slate-600 leading-snug pb-4 border-b border-line-dark">Two dedicated store types — Physical and Digital — never one blended cart.</p>
+        </div>
+        <div class="flex gap-4 items-baseline">
+          <span class="ghost-num">02</span>
+          <p class="text-[15px] text-slate-600 leading-snug pb-4 border-b border-line-dark">A real marketplace search that puts your store in front of buyers already browsing.</p>
+        </div>
+        <div class="flex gap-4 items-baseline">
+          <span class="ghost-num">03</span>
+          <p class="text-[15px] text-slate-600 leading-snug pb-4 border-b border-line-dark">Digital sales land in your withdrawable balance the moment payment clears.</p>
+        </div>
+        <div class="flex gap-4 items-baseline">
+          <span class="ghost-num">04</span>
+          <p class="text-[15px] text-slate-600 leading-snug">You keep the customer relationship — we don't stand between you and your buyers.</p>
+        </div>
       </div>
     </div>
   </div>
@@ -397,28 +589,34 @@
       <h2 class="font-display text-3xl sm:text-4xl lg:text-[2.75rem] font-bold tracking-tight leading-tight">Every other platform makes you choose a lane.<br class="hidden sm:block"> Qavona doesn't.</h2>
     </div>
 
-    <div class="grid lg:grid-cols-2 gap-6">
-      <div class="reveal-section rounded-2xl border border-line-dark bg-white p-8 lg:p-10">
-        <div class="w-11 h-11 rounded-xl bg-red-50 text-red-500 flex items-center justify-center mb-6"><i class="fa-solid fa-triangle-exclamation"></i></div>
-        <h3 class="font-display text-xl font-bold mb-4">The old way</h3>
-        <ul class="space-y-4 text-slate-500 text-[15px] leading-relaxed">
-          <li class="flex gap-3"><i class="fa-solid fa-xmark text-red-400 mt-1"></i>Sell digital files on one platform, physical goods on another — two dashboards, two payout schedules, zero shared audience.</li>
-          <li class="flex gap-3"><i class="fa-solid fa-xmark text-red-400 mt-1"></i>Marketplaces like Amazon and Jumia own your customer data — you're renting an audience you can never contact again.</li>
-          <li class="flex gap-3"><i class="fa-solid fa-xmark text-red-400 mt-1"></i>Creator tools hand you a link and leave you to find your own traffic, with zero built-in discovery.</li>
-          <li class="flex gap-3"><i class="fa-solid fa-xmark text-red-400 mt-1"></i>Running ads means leaving your dashboard entirely for Meta Business Manager or Google Ads.</li>
-        </ul>
+    <div class="reveal-section max-w-4xl mx-auto rounded-2xl bg-white border border-line-dark shadow-xl overflow-hidden">
+      <div class="flex items-center justify-between px-6 sm:px-10 py-6 border-b-2 border-dashed border-line-dark">
+        <span class="font-marker text-2xl sm:text-3xl text-slate-400 -rotate-2 inline-block">the old way</span>
+        <i class="fa-solid fa-arrow-right-long text-slate-300 hidden sm:block"></i>
+        <span class="font-marker text-2xl sm:text-3xl text-gold rotate-1 inline-block">the Qavona way</span>
       </div>
 
-      <div class="reveal-section rounded-2xl bg-ink text-white p-8 lg:p-10 relative overflow-hidden">
-        <div class="absolute -right-10 -top-10 w-48 h-48 rounded-full gold-gradient opacity-20 blur-2xl"></div>
-        <div class="w-11 h-11 rounded-xl gold-gradient text-white flex items-center justify-center mb-6"><i class="fa-solid fa-bolt"></i></div>
-        <h3 class="font-display text-xl font-bold mb-4">The Qavona way</h3>
-        <ul class="space-y-4 text-slate-300 text-[15px] leading-relaxed relative">
-          <li class="flex gap-3"><i class="fa-solid fa-check text-gold mt-1"></i>One dashboard for physical and digital — one payout balance, one storefront, one growing audience.</li>
-          <li class="flex gap-3"><i class="fa-solid fa-check text-gold mt-1"></i>You own your customer relationships with a built-in CRM — segment, email, and retarget without asking permission.</li>
-          <li class="flex gap-3"><i class="fa-solid fa-check text-gold mt-1"></i>A real marketplace with organic cross-sell discovery — physical shoppers get introduced to your digital products automatically.</li>
-          <li class="flex gap-3"><i class="fa-solid fa-check text-gold mt-1"></i>A built-in Ads Manager launches campaigns to Facebook, Instagram and TikTok without ever leaving Qavona.</li>
-        </ul>
+      <div class="divide-y divide-line-dark">
+        <div class="grid sm:grid-cols-[1fr_auto_1fr] gap-3 sm:gap-6 px-6 sm:px-10 py-5">
+          <p class="text-slate-400 text-[15px] leading-relaxed"><s class="decoration-red-300 decoration-2">Sell digital files on one platform, physical goods on another</s> — two dashboards, two payout schedules.</p>
+          <span class="hidden sm:flex items-center text-gold"><i class="fa-solid fa-arrow-right"></i></span>
+          <p class="text-ink text-[15px] font-medium leading-relaxed">One login, two dedicated stores — flip between them in a click.</p>
+        </div>
+        <div class="grid sm:grid-cols-[1fr_auto_1fr] gap-3 sm:gap-6 px-6 sm:px-10 py-5">
+          <p class="text-slate-400 text-[15px] leading-relaxed">Amazon and Jumia <s class="decoration-red-300 decoration-2">own your customer data</s> — you're renting an audience.</p>
+          <span class="hidden sm:flex items-center text-gold"><i class="fa-solid fa-arrow-right"></i></span>
+          <p class="text-ink text-[15px] font-medium leading-relaxed">A built-in CRM means the customer relationship stays yours.</p>
+        </div>
+        <div class="grid sm:grid-cols-[1fr_auto_1fr] gap-3 sm:gap-6 px-6 sm:px-10 py-5">
+          <p class="text-slate-400 text-[15px] leading-relaxed">Creator tools <s class="decoration-red-300 decoration-2">hand you a link</s> and wish you luck finding traffic.</p>
+          <span class="hidden sm:flex items-center text-gold"><i class="fa-solid fa-arrow-right"></i></span>
+          <p class="text-ink text-[15px] font-medium leading-relaxed">Marketplace search puts real buyers in front of your store.</p>
+        </div>
+        <div class="grid sm:grid-cols-[1fr_auto_1fr] gap-3 sm:gap-6 px-6 sm:px-10 py-5">
+          <p class="text-slate-400 text-[15px] leading-relaxed">Running ads means <s class="decoration-red-300 decoration-2">leaving your dashboard</s> for Meta Business Manager.</p>
+          <span class="hidden sm:flex items-center text-gold"><i class="fa-solid fa-arrow-right"></i></span>
+          <p class="text-ink text-[15px] font-medium leading-relaxed">Launch Facebook, Instagram & TikTok campaigns without leaving Qavona.</p>
+        </div>
       </div>
     </div>
   </div>
@@ -445,8 +643,8 @@
       <div class="bento-card reveal-section rounded-2xl p-8 flex flex-col justify-between min-h-[240px]">
         <div>
           <div class="w-11 h-11 rounded-xl bg-ink flex items-center justify-center text-gold mb-5"><i class="fa-solid fa-layer-group"></i></div>
-          <h3 class="font-display text-xl font-bold mb-2">Physical + Digital, together</h3>
-          <p class="text-slate-500 text-[15px] leading-relaxed">Bundle a product with a course or eBook in the exact same cart.</p>
+          <h3 class="font-display text-xl font-bold mb-2">One login, two store types</h3>
+          <p class="text-slate-500 text-[15px] leading-relaxed">Run a Physical store and a Digital store side by side, switching between them in a click — no second sign-up.</p>
         </div>
       </div>
 
@@ -457,24 +655,27 @@
           <p class="text-slate-500 text-[15px] leading-relaxed">Multi-gateway routing plus instant payouts on digital sales — funds hit your balance the moment payment clears.</p>
         </div>
       </div>
-      <div class="bento-card reveal-section rounded-2xl p-8 flex flex-col justify-between min-h-[220px]">
-        <div>
-          <div class="w-11 h-11 rounded-xl bg-ink flex items-center justify-center text-gold mb-5"><i class="fa-solid fa-boxes-stacked"></i></div>
-          <h3 class="font-display text-xl font-bold mb-2">Order & inventory management</h3>
-          <p class="text-slate-500 text-[15px] leading-relaxed">Track stock, fulfillment, and digital licenses from a single unified order queue.</p>
-        </div>
+      <div class="bento-card reveal-section rounded-2xl p-8 flex flex-col justify-center min-h-[220px] bg-ink text-white">
+        <span class="font-display text-6xl font-bold text-gold leading-none">0</span>
+        <p class="text-white font-semibold text-sm mt-3">days waiting on a digital payout</p>
+        <p class="text-slate-400 text-xs mt-1">Cleared payment → withdrawable balance, same moment.</p>
       </div>
       <div class="bento-card reveal-section rounded-2xl p-8 flex flex-col justify-between min-h-[220px]">
         <div>
-          <div class="w-11 h-11 rounded-xl bg-ink flex items-center justify-center text-gold mb-5"><i class="fa-solid fa-swatchbook"></i></div>
+          <div class="flex gap-2 mb-5">
+            <span class="w-7 h-7 rounded-full" style="background:linear-gradient(135deg,#F8710D,#FFB648)"></span>
+            <span class="w-7 h-7 rounded-full bg-ink"></span>
+            <span class="w-7 h-7 rounded-full" style="background:#0F766E"></span>
+            <span class="w-7 h-7 rounded-full" style="background:#4C1D95"></span>
+          </div>
           <h3 class="font-display text-xl font-bold mb-2">Customizable themes</h3>
-          <p class="text-slate-500 text-[15px] leading-relaxed">Beautiful storefront templates that flex to your brand — no code required.</p>
+          <p class="text-slate-500 text-[15px] leading-relaxed">Storefront templates that flex to your brand palette — no code required.</p>
         </div>
       </div>
 
       <div class="bento-card reveal-section rounded-2xl p-8 flex flex-col justify-between min-h-[220px]">
         <div>
-          <div class="w-11 h-11 rounded-xl bg-ink flex items-center justify-center text-gold mb-5"><i class="fa-solid fa-chart-line"></i></div>
+          <div class="w-11 h-11 rounded-full border-2 border-ink flex items-center justify-center text-ink mb-5"><i class="fa-solid fa-chart-line"></i></div>
           <h3 class="font-display text-xl font-bold mb-2">Analytics & marketing tools</h3>
           <p class="text-slate-500 text-[15px] leading-relaxed">Real-time sales analytics, abandoned cart tracking, and audience segmentation.</p>
         </div>
@@ -501,7 +702,7 @@
       </div>
       <div class="bento-card reveal-section rounded-2xl p-8 flex flex-col justify-between min-h-[220px]">
         <div>
-          <div class="w-11 h-11 rounded-xl bg-ink flex items-center justify-center text-gold mb-5"><i class="fa-solid fa-gauge-high"></i></div>
+          <div class="w-11 h-11 rounded-full border-2 border-ink flex items-center justify-center text-ink mb-5"><i class="fa-solid fa-gauge-high"></i></div>
           <h3 class="font-display text-xl font-bold mb-2">Seller & buyer dashboards</h3>
           <p class="text-slate-500 text-[15px] leading-relaxed">Purpose-built views for vendors managing a business and buyers tracking their orders.</p>
         </div>
@@ -540,7 +741,7 @@
         </div>
         <ul class="space-y-4 text-slate-300 text-[15px]">
           <li class="flex gap-3"><i class="fa-solid fa-circle-check text-gold mt-1"></i>Launch a branded store in under 30 seconds — no lengthy approval queue</li>
-          <li class="flex gap-3"><i class="fa-solid fa-circle-check text-gold mt-1"></i>Sell physical goods, digital products, or bundle both in one cart</li>
+          <li class="flex gap-3"><i class="fa-solid fa-circle-check text-gold mt-1"></i>Run a Physical store, a Digital store, or both — one login, instant switching</li>
           <li class="flex gap-3"><i class="fa-solid fa-circle-check text-gold mt-1"></i>Own your customer data with a built-in CRM and email tools</li>
           <li class="flex gap-3"><i class="fa-solid fa-circle-check text-gold mt-1"></i>Instant payouts on digital sales, no 7-day waiting period</li>
           <li class="flex gap-3"><i class="fa-solid fa-circle-check text-gold mt-1"></i>Run your own affiliate program and pay UGC creators directly</li>
@@ -596,7 +797,7 @@
           <tbody>
             <tr><td class="px-6 py-4">Instant digital payouts</td><td class="text-center no-badge"><i class="fa-solid fa-xmark"></i></td><td class="text-center yes-badge"><i class="fa-solid fa-check"></i></td><td class="text-center no-badge"><i class="fa-solid fa-xmark"></i></td><td class="text-center qavona-col yes-badge font-semibold"><i class="fa-solid fa-check"></i></td></tr>
             <tr><td class="px-6 py-4">Marketplace organic traffic</td><td class="text-center no-badge"><i class="fa-solid fa-xmark"></i></td><td class="text-center no-badge"><i class="fa-solid fa-xmark"></i></td><td class="text-center no-badge"><i class="fa-solid fa-xmark"></i></td><td class="text-center qavona-col yes-badge font-semibold"><i class="fa-solid fa-check"></i></td></tr>
-            <tr><td class="px-6 py-4">Sell physical + digital together</td><td class="text-center no-badge"><i class="fa-solid fa-xmark"></i></td><td class="text-center no-badge"><i class="fa-solid fa-xmark"></i></td><td class="text-center yes-badge"><i class="fa-solid fa-check"></i></td><td class="text-center qavona-col yes-badge font-semibold"><i class="fa-solid fa-check"></i></td></tr>
+            <tr><td class="px-6 py-4">Physical &amp; Digital stores, one login</td><td class="text-center no-badge"><i class="fa-solid fa-xmark"></i></td><td class="text-center no-badge"><i class="fa-solid fa-xmark"></i></td><td class="text-center no-badge"><i class="fa-solid fa-xmark"></i></td><td class="text-center qavona-col yes-badge font-semibold"><i class="fa-solid fa-check"></i></td></tr>
             <tr><td class="px-6 py-4">Multi-currency holding (USD/GBP/EUR)</td><td class="text-center no-badge"><i class="fa-solid fa-xmark"></i></td><td class="text-center yes-badge"><i class="fa-solid fa-check"></i></td><td class="text-center yes-badge"><i class="fa-solid fa-check"></i></td><td class="text-center qavona-col yes-badge font-semibold"><i class="fa-solid fa-check"></i></td></tr>
             <tr><td class="px-6 py-4">1-on-1 session bookings</td><td class="text-center no-badge"><i class="fa-solid fa-xmark"></i></td><td class="text-center no-badge"><i class="fa-solid fa-xmark"></i></td><td class="text-center no-badge"><i class="fa-solid fa-xmark"></i></td><td class="text-center qavona-col yes-badge font-semibold"><i class="fa-solid fa-check"></i></td></tr>
             <tr><td class="px-6 py-4">Built-in video conferencing</td><td class="text-center no-badge"><i class="fa-solid fa-xmark"></i></td><td class="text-center no-badge"><i class="fa-solid fa-xmark"></i></td><td class="text-center no-badge"><i class="fa-solid fa-xmark"></i></td><td class="text-center qavona-col yes-badge font-semibold"><i class="fa-solid fa-check"></i></td></tr>
@@ -636,7 +837,7 @@
             </tr>
           </thead>
           <tbody>
-            <tr><td class="px-6 py-4">Bundle physical + digital items</td><td class="text-center no-badge"><i class="fa-solid fa-xmark"></i></td><td class="text-center no-badge"><i class="fa-solid fa-xmark"></i></td><td class="text-center no-badge"><i class="fa-solid fa-xmark"></i></td><td class="text-center qavona-col yes-badge font-semibold"><i class="fa-solid fa-check"></i></td></tr>
+            <tr><td class="px-6 py-4">Also run a Digital store from the same login</td><td class="text-center no-badge"><i class="fa-solid fa-xmark"></i></td><td class="text-center no-badge"><i class="fa-solid fa-xmark"></i></td><td class="text-center no-badge"><i class="fa-solid fa-xmark"></i></td><td class="text-center qavona-col yes-badge font-semibold"><i class="fa-solid fa-check"></i></td></tr>
             <tr><td class="px-6 py-4">Vendor owns customer CRM data</td><td class="text-center no-badge"><i class="fa-solid fa-xmark"></i></td><td class="text-center no-badge"><i class="fa-solid fa-xmark"></i></td><td class="text-center no-badge"><i class="fa-solid fa-xmark"></i></td><td class="text-center qavona-col yes-badge font-semibold"><i class="fa-solid fa-check"></i></td></tr>
             <tr><td class="px-6 py-4">Custom vendor-level affiliate payouts</td><td class="text-center no-badge"><i class="fa-solid fa-xmark"></i></td><td class="text-center no-badge"><i class="fa-solid fa-xmark"></i></td><td class="text-center no-badge"><i class="fa-solid fa-xmark"></i></td><td class="text-center qavona-col yes-badge font-semibold"><i class="fa-solid fa-check"></i></td></tr>
             <tr><td class="px-6 py-4">UGC bounty system for creators</td><td class="text-center no-badge"><i class="fa-solid fa-xmark"></i></td><td class="text-center no-badge"><i class="fa-solid fa-xmark"></i></td><td class="text-center no-badge"><i class="fa-solid fa-xmark"></i></td><td class="text-center qavona-col yes-badge font-semibold"><i class="fa-solid fa-check"></i></td></tr>
@@ -661,26 +862,28 @@
       <h2 class="font-display text-3xl sm:text-4xl lg:text-[2.75rem] font-bold tracking-tight leading-tight">From sign-up to sold, in four steps</h2>
     </div>
 
-    <div class="grid md:grid-cols-4 gap-6 relative">
-      <div class="hidden md:block absolute top-8 left-[12%] right-[12%] h-px bg-gradient-to-r from-transparent via-slate-200 to-transparent"></div>
+    <div class="grid md:grid-cols-4 gap-x-6 gap-y-10 relative">
+      <svg class="hidden md:block absolute top-6 left-0 right-0 w-full h-10 pointer-events-none" viewBox="0 0 1000 40" preserveAspectRatio="none">
+        <path d="M60 10 Q 250 34, 440 12 T 940 14" fill="none" stroke="#E2E5EA" stroke-width="2" stroke-dasharray="1 10" stroke-linecap="round"/>
+      </svg>
 
-      <div class="reveal-section relative">
-        <div class="w-14 h-14 rounded-2xl bg-ink text-gold font-display font-bold text-lg flex items-center justify-center mb-6 relative z-10">01</div>
+      <div class="reveal-section relative md:mt-0">
+        <span class="ghost-num block mb-3">01</span>
         <h3 class="font-display font-bold text-lg mb-2">Create your store</h3>
-        <p class="text-slate-500 text-[15px] leading-relaxed">Sign up in under 30 seconds and pick your store name, theme, and product type — physical, digital, or both.</p>
+        <p class="text-slate-500 text-[15px] leading-relaxed">Sign up in under 30 seconds. Choose a Physical store, a Digital store, or set up both — each gets its own dedicated dashboard.</p>
       </div>
-      <div class="reveal-section relative">
-        <div class="w-14 h-14 rounded-2xl bg-ink text-gold font-display font-bold text-lg flex items-center justify-center mb-6 relative z-10">02</div>
+      <div class="reveal-section relative md:mt-6">
+        <span class="ghost-num block mb-3">02</span>
         <h3 class="font-display font-bold text-lg mb-2">List your products</h3>
-        <p class="text-slate-500 text-[15px] leading-relaxed">Upload inventory, courses, or bookable services. Bundle physical and digital items in one listing.</p>
+        <p class="text-slate-500 text-[15px] leading-relaxed">Upload inventory to your Physical store, or courses and bookable sessions to your Digital store — each tuned for what you're actually selling.</p>
       </div>
-      <div class="reveal-section relative">
-        <div class="w-14 h-14 rounded-2xl bg-ink text-gold font-display font-bold text-lg flex items-center justify-center mb-6 relative z-10">03</div>
+      <div class="reveal-section relative md:-mt-2">
+        <span class="ghost-num block mb-3">03</span>
         <h3 class="font-display font-bold text-lg mb-2">Get discovered & sell</h3>
         <p class="text-slate-500 text-[15px] leading-relaxed">Marketplace search sends you buyers, or launch 1-click ads to Facebook, Instagram, and TikTok.</p>
       </div>
-      <div class="reveal-section relative">
-        <div class="w-14 h-14 rounded-2xl gold-gradient text-white font-display font-bold text-lg flex items-center justify-center mb-6 relative z-10">04</div>
+      <div class="reveal-section relative md:mt-5">
+        <span class="ghost-num block mb-3" style="-webkit-text-stroke-color:var(--gold); opacity:0.55;">04</span>
         <h3 class="font-display font-bold text-lg mb-2">Get paid, instantly</h3>
         <p class="text-slate-500 text-[15px] leading-relaxed">Digital sales hit your withdrawable balance immediately. Withdraw to your local bank, any time.</p>
       </div>
@@ -698,37 +901,38 @@
       <h2 class="font-display text-3xl sm:text-4xl lg:text-[2.75rem] font-bold tracking-tight leading-tight">Builders getting a first look love what they see</h2>
     </div>
 
-    <div class="grid md:grid-cols-3 gap-6 mb-20">
-      <div class="reveal-section bento-card rounded-2xl p-7">
-        <div class="flex gap-1 text-gold text-sm mb-4">★★★★★</div>
-        <p class="text-slate-600 text-[15px] leading-relaxed mb-6">"I sell skincare and a companion coaching course. Every other platform made me pick one. Qavona finally lets me run both from a single dashboard."</p>
-        <div class="flex items-center gap-3">
-          <div class="w-10 h-10 rounded-full bg-gradient-to-br from-orange-400 to-amber-300"></div>
+    <div class="grid lg:grid-cols-5 gap-6 mb-20 items-stretch">
+      <div class="reveal-section lg:col-span-3 rounded-2xl bg-ink text-white p-8 lg:p-10 flex flex-col justify-between relative overflow-hidden">
+        <span class="font-display text-7xl text-gold/30 leading-none absolute top-6 left-8">"</span>
+        <p class="text-white text-xl lg:text-2xl leading-snug font-medium relative z-10 mt-8">I run a skincare store and a coaching business. Every other platform made me pick one. Qavona gave me both, under one login, without stitching two platforms together myself.</p>
+        <div class="flex items-center gap-3 mt-8 relative z-10">
+          <div class="hex-avatar w-11 h-11 flex items-center justify-center font-display font-bold text-sm" style="background:linear-gradient(135deg,#F8710D,#FFB648)">AO</div>
           <div>
             <p class="font-semibold text-sm">Amaka O.</p>
-            <p class="text-xs text-slate-400">Skincare & Coaching, Lagos</p>
+            <p class="text-xs text-slate-400">Skincare Store + Coaching, Lagos</p>
           </div>
         </div>
       </div>
-      <div class="reveal-section bento-card rounded-2xl p-7">
-        <div class="flex gap-1 text-gold text-sm mb-4">★★★★★</div>
-        <p class="text-slate-600 text-[15px] leading-relaxed mb-6">"The instant payout on digital sales alone would have sold me. The built-in ads manager on top of that is a genuine unfair advantage."</p>
-        <div class="flex items-center gap-3">
-          <div class="w-10 h-10 rounded-full bg-gradient-to-br from-slate-400 to-slate-600"></div>
-          <div>
-            <p class="font-semibold text-sm">Daniel K.</p>
-            <p class="text-xs text-slate-400">Online Course Creator</p>
+
+      <div class="lg:col-span-2 flex flex-col gap-6">
+        <div class="reveal-section bento-card rounded-2xl p-6 flex-1">
+          <p class="text-slate-600 text-[15px] leading-relaxed mb-5">"The instant payout on digital sales alone would've sold me. The Ads Engine on top of that is a genuine unfair advantage."</p>
+          <div class="flex items-center gap-3">
+            <div class="hex-avatar w-9 h-9 flex items-center justify-center font-display font-bold text-xs text-white" style="background:#334467">DK</div>
+            <div>
+              <p class="font-semibold text-sm">Daniel K.</p>
+              <p class="text-xs text-slate-400">Online Course Creator</p>
+            </div>
           </div>
         </div>
-      </div>
-      <div class="reveal-section bento-card rounded-2xl p-7">
-        <div class="flex gap-1 text-gold text-sm mb-4">★★★★★</div>
-        <p class="text-slate-600 text-[15px] leading-relaxed mb-6">"We onboarded in minutes, not weeks. No approval queue, no paperwork wall before we could even see the dashboard."</p>
-        <div class="flex items-center gap-3">
-          <div class="w-10 h-10 rounded-full bg-gradient-to-br from-amber-500 to-orange-600"></div>
-          <div>
-            <p class="font-semibold text-sm">Funke A.</p>
-            <p class="text-xs text-slate-400">Home Goods Store Owner</p>
+        <div class="reveal-section bento-card rounded-2xl p-6 flex-1">
+          <p class="text-slate-600 text-[15px] leading-relaxed mb-5">"We onboarded in minutes, not weeks — no paperwork wall before we could even see the dashboard."</p>
+          <div class="flex items-center gap-3">
+            <div class="hex-avatar w-9 h-9 flex items-center justify-center font-display font-bold text-xs text-white" style="background:#9D174D">FA</div>
+            <div>
+              <p class="font-semibold text-sm">Funke A.</p>
+              <p class="text-xs text-slate-400">Home Goods Store Owner</p>
+            </div>
           </div>
         </div>
       </div>
@@ -816,9 +1020,8 @@
           <p class="text-slate-500 max-w-md mx-auto">Be first to launch your store — or shop the marketplace — the day we open.</p>
         </div>
 
-        <!-- FORM_ACTION_ENDPOINT: replace action with your form handler (e.g. Formspree) -->
-        <form id="waitlist-form" action="https://formspree.io/f/YOUR_FORM_ID" method="POST" novalidate class="grid sm:grid-cols-2 gap-5 max-w-2xl mx-auto">
-          <input type="hidden" name="_to" value="Contacts@qavona.com">
+        <!-- Wired to your Formspree endpoint — submissions arrive at your connected inbox -->
+        <form id="waitlist-form" action="https://formspree.io/f/mdaqolve" method="POST" novalidate class="grid sm:grid-cols-2 gap-5 max-w-2xl mx-auto">
 
           <div class="sm:col-span-1">
             <label for="wl-name" class="block text-sm font-semibold mb-2">Full name</label>
@@ -836,20 +1039,29 @@
 
           <div class="sm:col-span-2">
             <span class="block text-sm font-semibold mb-2">I'm joining as a...</span>
-            <div class="grid grid-cols-3 gap-3">
-              <label class="role-option cursor-pointer text-center border border-line-dark rounded-xl py-3 text-sm font-medium hover:border-gold transition-colors">
-                <input type="radio" name="role" value="Vendor" class="sr-only" required>
+            <div class="grid grid-cols-2 sm:grid-cols-4 gap-3">
+              <label class="role-option cursor-pointer text-center border border-line-dark rounded-xl py-3 px-2 text-sm font-medium hover:border-gold transition-colors">
+                <input type="radio" name="role" value="Vendor (Physical Products)" class="sr-only" required>
                 <i class="fa-solid fa-shop block mb-1 text-gold"></i>Vendor
+                <span class="block text-[11px] text-slate-400 font-normal leading-tight mt-0.5">Physical products</span>
               </label>
-              <label class="role-option cursor-pointer text-center border border-line-dark rounded-xl py-3 text-sm font-medium hover:border-gold transition-colors">
+              <label class="role-option cursor-pointer text-center border border-line-dark rounded-xl py-3 px-2 text-sm font-medium hover:border-gold transition-colors">
+                <input type="radio" name="role" value="Digital Creator" class="sr-only" required>
+                <i class="fa-solid fa-laptop-code block mb-1 text-gold"></i>Digital Creator
+                <span class="block text-[11px] text-slate-400 font-normal leading-tight mt-0.5">Digital products</span>
+              </label>
+              <label class="role-option cursor-pointer text-center border border-line-dark rounded-xl py-3 px-2 text-sm font-medium hover:border-gold transition-colors">
                 <input type="radio" name="role" value="Buyer" class="sr-only" required>
                 <i class="fa-solid fa-bag-shopping block mb-1 text-gold"></i>Buyer
+                <span class="block text-[11px] text-slate-400 font-normal leading-tight mt-0.5">Just shopping</span>
               </label>
-              <label class="role-option cursor-pointer text-center border border-line-dark rounded-xl py-3 text-sm font-medium hover:border-gold transition-colors">
-                <input type="radio" name="role" value="Both" class="sr-only" required>
+              <label class="role-option cursor-pointer text-center border border-line-dark rounded-xl py-3 px-2 text-sm font-medium hover:border-gold transition-colors">
+                <input type="radio" name="role" value="Both (Vendor & Buyer)" class="sr-only" required>
                 <i class="fa-solid fa-star block mb-1 text-gold"></i>Both
+                <span class="block text-[11px] text-slate-400 font-normal leading-tight mt-0.5">Vendor + buyer</span>
               </label>
             </div>
+            <p class="text-xs text-slate-400 mt-2"><i class="fa-solid fa-circle-info mr-1"></i>Physical and digital selling live in separate, dedicated stores — you can run both under one login and switch between them instantly.</p>
             <p class="error-msg role-error text-red-500 text-xs mt-1 hidden">Please choose one.</p>
           </div>
 
@@ -860,10 +1072,11 @@
           </div>
 
           <div class="sm:col-span-2">
-            <button type="submit" class="w-full btn-gold text-white font-semibold py-4 rounded-full">
-              Join the Waitlist <i class="fa-solid fa-paper-plane ml-2"></i>
+            <button type="submit" id="waitlist-submit-btn" class="w-full btn-gold text-white font-semibold py-4 rounded-full">
+              <span class="btn-label">Join the Waitlist <i class="fa-solid fa-paper-plane ml-2"></i></span>
             </button>
-            <p class="text-center text-xs text-slate-400 mt-3">We'll only email you about the Qavona launch. Or reach us directly at <a href="mailto:Contacts@qavona.com" class="text-gold font-medium">Contacts@qavona.com</a></p>
+            <p class="error-msg submit-error text-red-500 text-xs mt-3 text-center hidden">Something went wrong sending your details — please try again, or email us directly.</p>
+            <p class="text-center text-xs text-slate-400 mt-3">We'll only email you about the Qavona launch. Or reach us directly at <a href="mailto:Contact@qavona.com" class="text-gold font-medium">Contact@qavona.com</a> · <a href="tel:+2348113594654" class="text-gold font-medium">+234 811 359 4654</a></p>
           </div>
         </form>
 
@@ -897,7 +1110,7 @@
           <i class="fa-solid fa-plus faq-chevron transition-transform text-gold"></i>
         </button>
         <div class="faq-answer px-6">
-          <p class="text-slate-500 text-[15px] pb-5 leading-relaxed">Yes. A single store can list physical products, digital products, or bundle both in the same cart — for example a paperback book packaged with its digital PDF and a companion course.</p>
+          <p class="text-slate-500 text-[15px] pb-5 leading-relaxed">Yes, but as two separate stores rather than one mixed cart. Physical and Digital selling each get their own dedicated store type, built around how that kind of business actually works — inventory and shipping for one, licensing and instant delivery for the other. Open both under a single login and switch between them in a tap; we're not merging them into one storefront.</p>
         </div>
       </div>
 
@@ -1008,14 +1221,16 @@
         <ul class="space-y-3 text-sm text-slate-400">
           <li><a href="#" class="hover:text-white transition-colors">About</a></li>
           <li><a href="#faq" class="hover:text-white transition-colors">FAQ</a></li>
-          <li><a href="mailto:Contacts@qavona.com" class="hover:text-white transition-colors">Contact</a></li>
         </ul>
       </div>
 
       <div>
-        <h4 class="text-white font-semibold text-sm mb-4">Get Notified</h4>
-        <p class="text-slate-400 text-sm mb-3">Launch updates, straight to your inbox.</p>
-        <a href="#waitlist" class="inline-block btn-gold text-white text-sm font-semibold px-5 py-2.5 rounded-full">Join Waitlist</a>
+        <h4 class="text-white font-semibold text-sm mb-4">Contact</h4>
+        <ul class="space-y-3 text-sm text-slate-400">
+          <li><a href="mailto:Contact@qavona.com" class="hover:text-white transition-colors flex items-center gap-2"><i class="fa-solid fa-envelope text-gold text-xs"></i>Contact@qavona.com</a></li>
+          <li><a href="tel:+2348113594654" class="hover:text-white transition-colors flex items-center gap-2"><i class="fa-solid fa-phone text-gold text-xs"></i>+234 811 359 4654</a></li>
+        </ul>
+        <a href="#waitlist" class="inline-block btn-gold text-white text-sm font-semibold px-5 py-2.5 rounded-full mt-5">Join Waitlist</a>
       </div>
     </div>
 
@@ -1095,13 +1310,30 @@ setInterval(updateCountdown, 1000);
   }, 9000);
 })();
 
-/* ---------- Hero mini email form -> scrolls to and fills main waitlist form ---------- */
+/* ---------- Hero mini email form -> submits a quick signup, then offers the full form ---------- */
 document.getElementById('hero-mini-form').addEventListener('submit', function(e){
   e.preventDefault();
-  const email = document.getElementById('hero-email').value;
-  document.getElementById('wl-email').value = email;
-  document.getElementById('waitlist').scrollIntoView({behavior:'smooth', block:'center'});
-  document.getElementById('wl-name').focus();
+  const emailInput = document.getElementById('hero-email');
+  const email = emailInput.value.trim();
+  const emailPattern = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+  if(!emailPattern.test(email)) { emailInput.focus(); return; }
+
+  const submitBtn = this.querySelector('button[type="submit"]');
+  const originalLabel = submitBtn.textContent;
+  submitBtn.disabled = true;
+  submitBtn.textContent = 'Sending...';
+
+  fetch('https://formspree.io/f/mdaqolve', {
+    method:'POST',
+    headers:{ 'Accept':'application/json', 'Content-Type':'application/json' },
+    body: JSON.stringify({ email: email, source: 'Hero quick signup', message: 'Quick email capture from hero section' })
+  }).finally(() => {
+    submitBtn.disabled = false;
+    submitBtn.textContent = originalLabel;
+    document.getElementById('wl-email').value = email;
+    document.getElementById('waitlist').scrollIntoView({behavior:'smooth', block:'center'});
+    document.getElementById('wl-name').focus();
+  });
 });
 
 document.querySelectorAll('.hero-cta-btn').forEach(btn => {
@@ -1109,10 +1341,13 @@ document.querySelectorAll('.hero-cta-btn').forEach(btn => {
     const role = this.dataset.role;
     if(!role) return;
     setTimeout(() => {
-      const map = {vendor:'Vendor', buyer:'Buyer'};
+      const map = {vendor:'Vendor (Physical Products)', buyer:'Buyer'};
       const target = map[role];
       const radio = document.querySelector(`input[name="role"][value="${target}"]`);
-      if(radio){ radio.checked = true; document.querySelectorAll('.role-option').forEach(o=>o.classList.remove('ring-2')); radio.closest('.role-option').classList.add('ring-2'); }
+      if(radio){
+        radio.checked = true;
+        radio.dispatchEvent(new Event('change'));
+      }
     }, 400);
   });
 });
@@ -1132,7 +1367,7 @@ document.querySelectorAll('input[name="role"]').forEach(input => {
   });
 });
 
-/* ---------- Waitlist form validation + success + confetti ---------- */
+/* ---------- Waitlist form validation + real Formspree submission + success/error states ---------- */
 const waitlistForm = document.getElementById('waitlist-form');
 waitlistForm.addEventListener('submit', function(e){
   e.preventDefault();
@@ -1141,6 +1376,8 @@ waitlistForm.addEventListener('submit', function(e){
   const name = document.getElementById('wl-name');
   const email = document.getElementById('wl-email');
   const roleChecked = document.querySelector('input[name="role"]:checked');
+  const submitBtn = document.getElementById('waitlist-submit-btn');
+  const btnLabel = submitBtn.querySelector('.btn-label');
 
   document.querySelectorAll('.error-msg').forEach(m => m.classList.add('hidden'));
 
@@ -1160,20 +1397,26 @@ waitlistForm.addEventListener('submit', function(e){
 
   if(!valid) return;
 
-  // Attempt a real submission if FORM_ACTION_ENDPOINT has been configured;
-  // otherwise this simply falls through to the local success state below,
-  // and mailto:Contacts@qavona.com remains available as a manual fallback.
+  submitBtn.disabled = true;
+  btnLabel.innerHTML = 'Sending... <i class="fa-solid fa-spinner fa-spin ml-2"></i>';
+
   const formData = new FormData(waitlistForm);
   fetch(waitlistForm.action, {
     method:'POST',
     body: formData,
     headers:{ 'Accept':'application/json' }
-  }).catch(() => { /* silently ignore until a real endpoint is configured */ });
-
-  waitlistForm.classList.add('hidden');
-  const success = document.getElementById('waitlist-success');
-  success.classList.remove('hidden');
-  fireConfetti();
+  })
+  .then(response => {
+    if(!response.ok){ throw new Error('Formspree responded with an error'); }
+    waitlistForm.classList.add('hidden');
+    document.getElementById('waitlist-success').classList.remove('hidden');
+    fireConfetti();
+  })
+  .catch(() => {
+    document.querySelector('.submit-error').classList.remove('hidden');
+    submitBtn.disabled = false;
+    btnLabel.innerHTML = 'Join the Waitlist <i class="fa-solid fa-paper-plane ml-2"></i>';
+  });
 });
 
 /* ---------- FAQ accordion ---------- */
